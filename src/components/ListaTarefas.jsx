@@ -30,7 +30,7 @@ export default class ListaTarefas extends React.Component {
   handleDelete = (index) => {
     const { tarefas } = this.state;
     // Remove a tarefa da lista com base no índice fornecido
-    const updateTarefa = tarefas.filter((tarefa, i) => i !== index);
+    const updateTarefa = tarefas.filter((tarefas, i) => i !== index);
     // Atualiza o estado com a lista de tarefas atualizada (sem a tarefa removida)
     this.setState({ tarefas: updateTarefa });
   };
