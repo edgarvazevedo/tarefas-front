@@ -1,4 +1,8 @@
 import React from "react";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 
 export default class ListaTarefas extends React.Component {
   constructor(props) {
@@ -38,16 +42,38 @@ export default class ListaTarefas extends React.Component {
   render() {
     const { tarefas, novaTarefa } = this.state;
     return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
-          <input type="text" value={novaTarefa} onChange={this.handleChange} />
-          <button type="submit">Adicionar</button>
-        </form>
+      <div className="">
+        <Form onSubmit={this.handleSubmit}>
+          <Row className="mb-3">
+            <Form.Group as={Col} controlId="formGridState">
+              <Form.Label>State</Form.Label>
+              <Form.Select defaultValue="Choose...">
+                <option>Choose...</option>
+                <option>...</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group as={Col} controlId="formGridEmail">
+              <Form.Label>Tarefa</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter email"
+                value={novaTarefa}
+                onChange={this.handleChange}
+              />
+            </Form.Group>
+            <input
+              type="text"
+              value={novaTarefa}
+              onChange={this.handleChange}
+            />
+            <Button type="submit">Adicionar</Button>
+          </Row>
+        </Form>
         <ul>
           {tarefas.map((tarefas, index) => (
             <li key={index}>
               {tarefas}
-              <button onClick={() => this.handleDelete}>Excluir</button>
+              <Button onClick={() => this.handleDelete}>Excluir</Button>
             </li>
           ))}
         </ul>
