@@ -1,9 +1,11 @@
 import React from "react";
-import Button from "react-bootstrap/Button";
+import { Button } from "@mantine/core";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
+import { IconTrash, IconPencil } from "@tabler/icons-react";
+import { ActionIcon } from "@mantine/core";
 
 import { api } from "../api/config";
 import tarefaUtils from "../utils/tarefaUtils"; // Importe as funções de manipulação do arquivo utils/tarefaUtils.js
@@ -66,41 +68,8 @@ export default class ListaTarefas extends React.Component {
     }
     return (
       <div className="container">
-        <Form
-          onSubmit={(event) =>
-            tarefaUtils.handleSubmit(
-              event,
-              novaTarefa,
-              this.setState.bind(this)
-            )
-          }
-        >
-          <Row className="mb-3">
-            <Form.Group as={Col} md={6} controlId="textarea">
-              <Form.Label>Prioridade</Form.Label>
-              <Form.Select
-                value={novaTarefa.prioridade}
-                onChange={this.handleChangePrioridade}
-              >
-                <option disabled hidden value="">
-                  Escolha sua prioridade
-                </option>
-                <option>Baixa</option>
-                <option>Média</option>
-                <option>Alta</option>
-              </Form.Select>
-              <Form.Label>Descrição</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Tarefa"
-                value={novaTarefa.descricao}
-                onChange={this.handleChange}
-              />
-            </Form.Group>
-            <Button type="submit">Adicionar</Button>
-          </Row>
-        </Form>
         <Row className="mb-3">
+          <h1>Minhas Tarefas</h1>
           <Table striped bordered hover>
             <thead>
               <tr>
@@ -115,31 +84,37 @@ export default class ListaTarefas extends React.Component {
                   <td>{tarefa.descricao}</td>
                   <td>{tarefa.prioridade}</td>
                   <td>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() =>
-                        tarefaUtils.handleDelete(
-                          tarefa._id,
-                          this.setState.bind(this)
-                        )
-                      }
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "8px",
+                      }}
                     >
-                      Excluir
-                    </Button>{" "}
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() =>
-                        tarefaUtils.handleEdit(
-                          tarefa._id,
-                          novaTarefa,
-                          this.setState.bind(this)
-                        )
-                      }
-                    >
-                      Editar
-                    </Button>
+                      <ActionIcon
+                        variant="filled"
+                        onClick={() =>
+                          tarefaUtils.handleEdit(
+                            tarefa._id,
+                            novaTarefa,
+                            this.setState.bind(this)
+                          )
+                        }
+                      >
+                        <IconPencil size="1rem" />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="filled"
+                        onClick={() =>
+                          tarefaUtils.handleDelete(
+                            tarefa._id,
+                            this.setState.bind(this)
+                          )
+                        }
+                      >
+                        <IconTrash size="1rem" />
+                      </ActionIcon>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -178,6 +153,45 @@ export default class ListaTarefas extends React.Component {
               )}
             </tbody>
           </Table>
+          <div>
+            <Form
+              onSubmit={(event) =>
+                tarefaUtils.handleSubmit(
+                  event,
+                  novaTarefa,
+                  this.setState.bind(this)
+                )
+              }
+            >
+              <Row className="mb-3">
+                <Col md={6} className="justify-content-center">
+                  <h1>Adicionar Tarefa</h1>
+                  <Form.Label>Descrição</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Tarefa"
+                    value={novaTarefa.descricao}
+                    onChange={this.handleChange}
+                  />
+                  <Form.Label>Prioridade</Form.Label>
+                  <Form.Select
+                    value={novaTarefa.prioridade}
+                    onChange={this.handleChangePrioridade}
+                  >
+                    <option disabled hidden value="">
+                      Escolha sua prioridade
+                    </option>
+                    <option>Baixa</option>
+                    <option>Média</option>
+                    <option>Alta</option>
+                  </Form.Select>
+                  <Button type="submit" className="mb-3">
+                    Adicionar
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+          </div>
         </Row>
       </div>
     );
