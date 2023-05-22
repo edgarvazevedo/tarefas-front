@@ -5,63 +5,35 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
 
-import { api, postTarefa } from "../api/config";
-import axios from "axios";
+import { api } from "../api/config";
+import tarefaUtils from "../utils/tarefaUtils"; // Importe as funções de manipulação do arquivo utils/tarefaUtils.js
 
 export default class ListaTarefas extends React.Component {
   constructor(props) {
     super(props);
-    // Inicializa o estado do componente com uma lista de tarefas vazia e uma nova tarefa vazia
     this.state = {
       tarefas: [],
       novaTarefa: {
         descricao: "",
         prioridade: "",
       },
+      tarefaEditada: null,
     };
   }
-
-  handleDelete = (_id) => {
-    const { tarefas } = this.state;
-
-    // Faz a chamada DELETE para excluir a tarefa
-    axios
-      .delete(`http://localhost:5000/tarefas/${_id}`)
-      .then(() => {
-        // Remove a tarefa do estado
-        const updatedTarefas = tarefas.filter((tarefa) => tarefa._id !== _id);
-        this.setState({ tarefas: updatedTarefas });
-      })
-      .catch((error) => {
-        console.error("Erro ao excluir tarefa:", error);
-      });
-  };
 
   componentDidMount() {
     // Faz a chamada GET para buscar as tarefas da API
     api
       .get("/")
       .then((response) => {
-        const tarefas = response.data; // Obtém as tarefas da resposta da API
-        this.setState({ tarefas }); // Atualiza o estado com as tarefas recebidas
+        const tarefas = response.data;
+        this.setState({ tarefas });
         console.log(response.data);
       })
       .catch((error) => {
         console.error("Erro ao buscar tarefas:", error);
       });
   }
-
-  buscarTarefaPorId = (id) => {
-    api
-      .get(`/tarefas/${id}`)
-      .then((response) => {
-        const tarefa = response.data; // Obtém a tarefa da resposta da API
-        // Atualiza o estado ou faça qualquer outra ação com a tarefa obtida
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar tarefa por ID:", error);
-      });
-  };
 
   handleChange = (event) => {
     this.setState({
@@ -70,6 +42,10 @@ export default class ListaTarefas extends React.Component {
         descricao: event.target.value,
       },
     });
+  };
+
+  handleEditClick = (tarefa) => {
+    tarefaUtils.handleEdit(tarefa._id, this.setState.bind(this));
   };
 
   handleChangePrioridade = (event) => {
@@ -81,53 +57,6 @@ export default class ListaTarefas extends React.Component {
     });
   };
 
-  handleSubmit = (event) => {
-    event.preventDefault();
-    const { novaTarefa } = this.state;
-
-    // Verifica se os campos obrigatórios estão preenchidos
-    if (
-      novaTarefa.descricao.trim() === "" ||
-      novaTarefa.prioridade.trim() === ""
-    ) {
-      return;
-    }
-
-    // Cria um objeto com os dados a serem enviados
-    const data = {
-      descricao: novaTarefa.descricao,
-      prioridade: novaTarefa.prioridade,
-    };
-
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-
-    // Faz a chamada POST para enviar os dados para o backend
-    axios
-      .post("http://localhost:5000/tarefas", data, config)
-      .then((response) => {
-        // Lida com a resposta do backend, se necessário
-        console.log("Tarefa criada com sucesso:", response.data);
-
-        // Atualiza o estado ou realiza outras ações necessárias
-        const { tarefas } = this.state;
-        const updatedTarefas = [...tarefas, response.data];
-        this.setState({
-          tarefas: updatedTarefas,
-          novaTarefa: {
-            descricao: "",
-            prioridade: "",
-          },
-        });
-      })
-      .catch((error) => {
-        console.error("Erro ao criar tarefa:", error);
-      });
-  };
-
   render() {
     const { tarefas, novaTarefa } = this.state;
 
@@ -137,7 +66,15 @@ export default class ListaTarefas extends React.Component {
     }
     return (
       <div className="container">
-        <Form onSubmit={this.handleSubmit}>
+        <Form
+          onSubmit={(event) =>
+            tarefaUtils.handleSubmit(
+              event,
+              novaTarefa,
+              this.setState.bind(this)
+            )
+          }
+        >
           <Row className="mb-3">
             <Form.Group as={Col} md={6} controlId="textarea">
               <Form.Label>Prioridade</Form.Label>
@@ -181,13 +118,64 @@ export default class ListaTarefas extends React.Component {
                     <Button
                       size="sm"
                       variant="danger"
-                      onClick={() => this.handleDelete(tarefa._id)}
+                      onClick={() =>
+                        tarefaUtils.handleDelete(
+                          tarefa._id,
+                          this.setState.bind(this)
+                        )
+                      }
                     >
                       Excluir
+                    </Button>{" "}
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() =>
+                        tarefaUtils.handleEdit(
+                          tarefa._id,
+                          novaTarefa,
+                          this.setState.bind(this)
+                        )
+                      }
+                    >
+                      Editar
                     </Button>
                   </td>
                 </tr>
               ))}
+              {this.state.tarefaEditada && (
+                <tr>
+                  <td colSpan={3}>
+                    <Form onSubmit={this.handleEditSubmit}>
+                      <Form.Group as={Col} md={6} controlId="textarea">
+                        <Form.Label>Prioridade</Form.Label>
+                        <Form.Select
+                          value={this.state.tarefaEditada.prioridade}
+                          onChange={this.handleEditChangePrioridade}
+                        >
+                          <option disabled hidden value="">
+                            Escolha sua prioridade
+                          </option>
+                          <option>Baixa</option>
+                          <option>Média</option>
+                          <option>Alta</option>
+                        </Form.Select>
+                        <Form.Label>Descrição</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Tarefa"
+                          value={this.state.tarefaEditada.descricao}
+                          onChange={this.handleEditChange}
+                        />
+                      </Form.Group>
+                      <Button type="submit">Salvar</Button>
+                      <Button variant="secondary" onClick={this.cancelEdit}>
+                        Cancelar
+                      </Button>
+                    </Form>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </Row>
